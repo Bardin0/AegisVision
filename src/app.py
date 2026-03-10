@@ -4,10 +4,10 @@ import uuid
 
 app = Flask(__name__)
 
-# s3 = boto3.client("s3")
+s3 = boto3.client("s3")
 # dynamodb = boto3.resource("dynamodb")
 
-# BUCKET_NAME = "object-detection-images"
+BUCKET_NAME = "aegis-image-bucket"
 # TABLE_NAME = "ObjectDetections"
 
 # table = dynamodb.Table(TABLE_NAME)
@@ -27,7 +27,7 @@ def upload():
     image_id = str(uuid.uuid4())
     key = f"uploads/{image_id}.jpg"
 
-    # s3.upload_fileobj(file, BUCKET_NAME, key)
+    s3.upload_fileobj(file, BUCKET_NAME, key)
 
     return redirect(f"/results/{image_id}")
 
@@ -35,8 +35,7 @@ def upload():
 @app.route("/results/<image_id>")
 def results(image_id):
 
-    return render_template("results.html")
-    # key = f"uploads/{image_id}.jpg"
+    key = f"uploads/{image_id}.jpg"
 
     # response = table.get_item(
     #     Key={"image_key": key}
@@ -44,7 +43,7 @@ def results(image_id):
 
     # item = response.get("Item")
 
-    # return render_template("results.html", data=item)
+    return render_template("results.html")
 
 
 if __name__ == "__main__":
