@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,10 +8,29 @@
   <title>Aegis Vision</title>
 </head>
 <body>
-  <h1>Results</h1>
-  <p>Here are the results of your image analysis:</p>
-  <div class="results-container">
-    They are not here yet! But the image should be in S3
-  </div>
+	<div id="content">
+        {% if item %}
+            <h1>Results for {{ image_id }}</h1>
+            <img src="{{ image_url }}" style="max-width: 600px;">
+            <h3>Detections:</h3>
+            <ul>
+                {% for obj in item.objects %}
+                    <li>{{ obj.label }} ({{ (obj.confidence * 100)|round(1) }}%)</li>
+                {% endfor %}
+            </ul>
+	    <a href="/">Return Home</a>
+        {% else %}
+            <div style="text-align: center; margin-top: 50px;">
+                <h2>Processing your image...</h2>
+                <p>This usually takes 2-3 seconds. Please wait.</p>
+                <div class="loader"></div> </div>
+
+            <script>
+                // Poll the page every 3 seconds if data isn't ready
+                setTimeout(function() {
+                    window.location.reload();
+                }, 2000);
+            </script>
+        {% endif %}
 </body>
 </html>
