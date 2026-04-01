@@ -6,7 +6,7 @@ from ultralytics import YOLO
 from datetime import datetime
 from decimal import Decimal
 import cv2
-from collisionRisk import getCenterPoint, distance, isPersonDriving, is_overlapping
+from collisionRisk import getCenterPoint, distance, isPersonDriving, overlapRatio
 
 sqs = boto3.client("sqs")
 s3 = boto3.client("s3")
@@ -71,11 +71,11 @@ while True:
                     continue
 
                 dist = distance(person["bbox"], vehicle["bbox"])
-                overlap = is_overlapping(person["bbox"], vehicle["bbox"])
+                overlap = overlapRatio(person["bbox"], vehicle["bbox"])
 
-                if dist < 50 or overlap:
+                if dist < 50 or overlap > 0.3:
                     risk_level = "high"
-                elif dist < 100:
+                elif dist < 100 or overlap > 0.05:
                     risk_level = "medium"
                 else:
                     continue
