@@ -75,7 +75,7 @@ while True:
 
                 if dist < 50 or overlap > 0.07:
                     risk_level = "high"
-                elif dist < 100 or overlap > 0.02:
+                elif dist < 100 or overlap > 0.04:
                     risk_level = "medium"
                 else:
                     continue
