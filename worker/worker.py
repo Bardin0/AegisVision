@@ -44,7 +44,7 @@ while True:
         s3.download_file(bucket, key, local_path)
 
         # Run YOLO inference
-        results = model(local_path, save=True)
+        results = model(local_path, save=False)
 
         detections = []
 
@@ -77,33 +77,35 @@ while True:
                         "distance": Decimal(str(float((dist))))
                     })
 
+        risk_boxes = set()
+        for risk in risks:
+            for box in risk["bboxes"]:
+                # convert Decimal to tuple of ints for comparison
+                risk_boxes.add(tuple(map(int, box)))
+
         img = cv2.imread(saved_path)
 
+        # Draw all non-risk detections in blue
+        for d in detections:
+            box = tuple(map(int, d["bbox"]))
+            if box in risk_boxes:
+                continue  # skip risk boxes
+            x1, y1, x2, y2 = box
+            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)  # blue for normal
+
         for risk in risks:
-            # get their bounding boxes
-            box1, box2 = risk["bboxes"]
+            box1, box2 = [tuple(map(int, b)) for b in risk["bboxes"]]
 
-            # draw rectangles (RED = danger)
-            x1, y1, x2, y2 = map(int, box1)
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
+            for box in [box1, box2]:
+                x1, y1, x2, y2 = box
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)  # red for risk
 
-            x1, y1, x2, y2 = map(int, box2)
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
-
-            # draw warning text
+            # Draw "RISK" text
             cx = int((box1[0] + box2[0]) / 2)
             cy = int((box1[1] + box2[1]) / 2)
+            cv2.putText(img, "RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            cv2.putText(
-                img,
-                "RISK",
-                (cx, cy),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 0, 255),
-                2
-            )
-
+        # Save the annotated image
         cv2.imwrite(saved_path, img)
 
         for risk in risks:
