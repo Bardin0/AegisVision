@@ -59,6 +59,7 @@ while True:
                 })
 
         saved_path = os.path.join(results[0].save_dir, os.path.basename(local_path))
+        saved_path = os.path.join("/annotated", os.path.basename(local_path))
 
         # getting potential collision risks
         risks = []
