@@ -58,7 +58,6 @@ while True:
                     "bbox": [Decimal(str(float(coord))) for coord in box.xyxy.view(-1).tolist()]
                 })
 
-        saved_path = os.path.join(results[0].save_dir, os.path.basename(local_path))
         saved_path = os.path.join("/annotated", os.path.basename(local_path))
 
         # getting potential collision risks
