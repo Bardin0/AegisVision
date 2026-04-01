@@ -69,7 +69,7 @@ while True:
             for person in people:
                 dist = distance(person["bbox"], vehicle["bbox"])
 
-                if dist < 150:
+                if dist < 75:
                     risks.append({
                         "type": "risk",
                         "labels": [vehicle["label"], person["label"]],
