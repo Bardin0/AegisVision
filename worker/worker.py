@@ -74,7 +74,7 @@ while True:
 
                 if dist < 75:
                     risk_level = "high"
-                elif dist < 120:
+                elif dist < 170:
                     risk_level = "medium"
                 else:
                     continue
