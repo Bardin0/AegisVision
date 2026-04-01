@@ -106,6 +106,12 @@ while True:
 
         cv2.imwrite(saved_path, img)
 
+        for risk in risks:
+            print("---------- Detected risk:")
+            print("  Objects:", risk["labels"])
+            print("  Distance:", risk["distance"])
+            print("  BBoxes:", risk["bboxes"])
+
         # Store results
         table.put_item(
             Item={
