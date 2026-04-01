@@ -6,7 +6,7 @@ from ultralytics import YOLO
 from datetime import datetime
 from decimal import Decimal
 import cv2
-from collisionRisk import getCenterPoint, distance, isPersonDriving
+from collisionRisk import getCenterPoint, distance, isPersonDriving, is_overlapping
 
 sqs = boto3.client("sqs")
 s3 = boto3.client("s3")
