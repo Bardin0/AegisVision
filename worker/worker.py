@@ -72,9 +72,9 @@ while True:
 
                 dist = distance(person["bbox"], vehicle["bbox"])
 
-                if dist < 100:
+                if dist < 75:
                     risk_level = "high"
-                elif dist < 1000:
+                elif dist < 120:
                     risk_level = "medium"
                 else:
                     continue
@@ -101,7 +101,7 @@ while True:
             if box in risk_boxes:
                 continue  # skip risk boxes
             x1, y1, x2, y2 = box
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 2)  # blue for normal
+            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)  # blue for normal
 
         for risk in risks:
             box1, box2 = [tuple(map(int, b)) for b in risk["bboxes"]]
@@ -109,17 +109,17 @@ while True:
             for box in [box1, box2]:
                 x1, y1, x2, y2 = box
                 if risk["level"] == "high":
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 3)  # red for risk
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)  # red for high risk
                 else:
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 187, 0), 3)
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 255), 3) # yellow for medium risk
 
             # Draw "RISK" text
             cx = int((box1[0] + box2[0]) / 2)
             cy = int((box1[1] + box2[1]) / 2)
             if risk["level"] == "high":
-                cv2.putText(img, "HIGH RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                cv2.putText(img, "HIGH RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             else:
-                cv2.putText(img, "MEDIUM RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                cv2.putText(img, "MEDIUM RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255)), 2)
 
         # Save the annotated image
         cv2.imwrite(saved_path, img)
