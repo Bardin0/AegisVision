@@ -73,7 +73,7 @@ while True:
                 dist = distance(person["bbox"], vehicle["bbox"])
                 overlap = overlapRatio(person["bbox"], vehicle["bbox"])
 
-                if dist < 50 or overlap > 0.3:
+                if dist < 50 or overlap > 0.15:
                     risk_level = "high"
                 elif dist < 100 or overlap > 0.05:
                     risk_level = "medium"
