@@ -11,9 +11,11 @@ from collisionRisk import getCenterPoint, distance, isPersonDriving, overlapRati
 sqs = boto3.client("sqs")
 s3 = boto3.client("s3")
 dynamodb = boto3.resource("dynamodb")
+sns = boto3.client("sns")
 
 QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/934463280694/aegis-queue.fifo"
 TABLE_NAME = "aegis-inference-results"
+SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:934463280694:AegisAlerts:4a156a21-4df0-4a6c-99bd-fd9644cff274"
 
 table = dynamodb.Table(TABLE_NAME)
 
@@ -148,6 +150,15 @@ while True:
                 bucket,
                 newKey,
                 ExtraArgs={'ContentType': 'image/jpeg'}
+            )
+
+        if risks:
+            image_url = f"https://{bucket}.s3.amazonaws.com/{newKey}"
+
+            sns.publish(
+                TopicArn=SNS_TOPIC_ARN,
+                Subject="Aegis Alert",
+                Message=f"There is a risk detected in this image.\n\nView: {image_url}"
             )
 
         # Remove job from queue
