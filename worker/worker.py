@@ -44,7 +44,7 @@ while True:
         s3.download_file(bucket, key, local_path)
 
         # Run YOLO inference
-        results = model(local_path, save=False)
+        results = model(local_path, save=True, save_dir="/tmp/annotated")
 
         detections = []
 
@@ -58,7 +58,7 @@ while True:
                     "bbox": [Decimal(str(float(coord))) for coord in box.xyxy.view(-1).tolist()]
                 })
 
-        saved_path = os.path.join("/annotated", os.path.basename(local_path))
+        saved_path = os.path.join("/tmp/annotated", os.path.basename(local_path))
 
         # getting potential collision risks
         risks = []
