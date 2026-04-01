@@ -72,9 +72,9 @@ while True:
 
                 dist = distance(person["bbox"], vehicle["bbox"])
 
-                if dist < 50:
+                if dist < 100:
                     risk_level = "high"
-                elif dist < 75:
+                elif dist < 1000:
                     risk_level = "medium"
                 else:
                     continue
