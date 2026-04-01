@@ -74,7 +74,7 @@ while True:
                         "type": "risk",
                         "labels": [vehicle["label"], person["label"]],
                         "bboxes": [vehicle["bbox"], person["bbox"]],
-                        "distance": Decimal(dist)
+                        "distance": Decimal(str(float((dist))))
                     })
 
         img = cv2.imread(saved_path)
