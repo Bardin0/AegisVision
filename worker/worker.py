@@ -73,9 +73,9 @@ while True:
                 dist = distance(person["bbox"], vehicle["bbox"])
                 overlap = is_overlapping(person["bbox"], vehicle["bbox"])
 
-                if dist < 75 or overlap:
+                if dist < 50 or overlap:
                     risk_level = "high"
-                elif dist < 150:
+                elif dist < 100:
                     risk_level = "medium"
                 else:
                     continue
