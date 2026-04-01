@@ -110,7 +110,7 @@ while True:
                 x1, y1, x2, y2 = box
                 if risk["level"] == "high":
                     cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 3)  # red for risk
-                elif:
+                else:
                     cv2.rectangle(img, (x1, y1), (x2, y2), (255, 187, 0), 3)
 
             # Draw "RISK" text
@@ -118,7 +118,7 @@ while True:
             cy = int((box1[1] + box2[1]) / 2)
             if risk["level"] == "high":
                 cv2.putText(img, "HIGH RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-            elif:
+            else:
                 cv2.putText(img, "MEDIUM RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
         # Save the annotated image
