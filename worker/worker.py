@@ -15,7 +15,7 @@ sns = boto3.client("sns")
 
 QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/934463280694/aegis-queue.fifo"
 TABLE_NAME = "aegis-inference-results"
-SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:934463280694:AegisAlerts:4a156a21-4df0-4a6c-99bd-fd9644cff274"
+SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:934463280694:AegisAlerts"
 
 table = dynamodb.Table(TABLE_NAME)
 
