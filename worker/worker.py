@@ -119,7 +119,7 @@ while True:
             if risk["level"] == "high":
                 cv2.putText(img, "HIGH RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             else:
-                cv2.putText(img, "MEDIUM RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255)), 2)
+                cv2.putText(img, "MEDIUM RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
         # Save the annotated image
         cv2.imwrite(saved_path, img)
