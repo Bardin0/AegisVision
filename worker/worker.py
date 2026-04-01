@@ -83,7 +83,7 @@ while True:
                 # convert Decimal to tuple of ints for comparison
                 risk_boxes.add(tuple(map(int, box)))
 
-        img = cv2.imread(saved_path)
+        img = cv2.imread(local_path)
 
         # Draw all non-risk detections in blue
         for d in detections:
