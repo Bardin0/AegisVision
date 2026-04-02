@@ -42,6 +42,10 @@ while True:
 
         local_path = f"/tmp/{message['MessageId']}.jpg"
 
+        print("______________ Bucket:", bucket)
+        print("Key:", key)
+        print("Path:", local_path)
+
         # Download image
         s3.download_file(bucket, key, local_path)
 
