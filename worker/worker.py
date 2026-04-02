@@ -5,13 +5,17 @@ import json
 from ultralytics import YOLO
 from datetime import datetime
 from decimal import Decimal
+import cv2
+from collisionRisk import getCenterPoint, distance, isPersonDriving, overlapRatio
 
 sqs = boto3.client("sqs")
 s3 = boto3.client("s3")
 dynamodb = boto3.resource("dynamodb")
+sns = boto3.client("sns")
 
 QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/934463280694/aegis-queue.fifo"
 TABLE_NAME = "aegis-inference-results"
+SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:934463280694:AegisAlerts"
 
 table = dynamodb.Table(TABLE_NAME)
 
@@ -42,7 +46,7 @@ while True:
         s3.download_file(bucket, key, local_path)
 
         # Run YOLO inference
-        results = model(local_path, save=True)
+        results = model(local_path, save=True, save_dir="/tmp/annotated")
 
         detections = []
 
@@ -56,15 +60,88 @@ while True:
                     "bbox": [Decimal(str(float(coord))) for coord in box.xyxy.view(-1).tolist()]
                 })
 
+        saved_path = os.path.join("/tmp/annotated", os.path.basename(local_path))
+
+        # getting potential collision risks
+        risks = []
+        people = [d for d in detections if d["label"] == "person"]
+        vehicles = [d for d in detections if d["label"] in ["car", "truck", "bus", "motorbike", "train", "bicycle"]]
+
+        for vehicle in vehicles:
+            for person in people:
+                if isPersonDriving(person["bbox"], vehicle["bbox"], vehicle["label"]):
+                    continue
+
+                dist = distance(person["bbox"], vehicle["bbox"])
+                overlap = overlapRatio(person["bbox"], vehicle["bbox"])
+
+                if dist < 50 or overlap > 0.07:
+                    risk_level = "high"
+                elif dist < 120 or overlap > 0.03:
+                    risk_level = "medium"
+                else:
+                    continue
+
+                risks.append({
+                    "type": "risk",
+                    "labels": [vehicle["label"], person["label"]],
+                    "bboxes": [vehicle["bbox"], person["bbox"]],
+                    "distance": Decimal(str(float((dist)))),
+                    "level": risk_level
+                })
+
+        risk_boxes = set()
+        for risk in risks:
+            for box in risk["bboxes"]:
+                # convert Decimal to tuple of ints for comparison
+                risk_boxes.add(tuple(map(int, box)))
+
+        img = cv2.imread(local_path)
+
+        # Draw all non-risk detections in blue
+        for d in detections:
+            box = tuple(map(int, d["bbox"]))
+            if box in risk_boxes:
+                continue  # skip risk boxes
+            x1, y1, x2, y2 = box
+            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)  # blue for normal
+
+        for risk in risks:
+            box1, box2 = [tuple(map(int, b)) for b in risk["bboxes"]]
+
+            for box in [box1, box2]:
+                x1, y1, x2, y2 = box
+                if risk["level"] == "high":
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)  # red for high risk
+                else:
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 255), 3) # yellow for medium risk
+
+            # Draw "RISK" text
+            cx = int((box1[0] + box2[0]) / 2)
+            cy = int((box1[1] + box2[1]) / 2)
+            if risk["level"] == "high":
+                cv2.putText(img, "HIGH RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            else:
+                cv2.putText(img, "MEDIUM RISK", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+
+        # Save the annotated image
+        cv2.imwrite(saved_path, img)
+
+        for risk in risks:
+            print("---------- Detected risk:")
+            print("  Objects:", risk["labels"])
+            print("  Distance:", risk["distance"])
+            print("  BBoxes:", risk["bboxes"])
+
         # Store results
         table.put_item(
             Item={
                 "image_key": key,
                 "timestamp": datetime.utcnow().isoformat(),
-                "objects": detections
+                "objects": detections,
+                "risks": risks
             }
         )
-        saved_path = os.path.join(results[0].save_dir, os.path.basename(local_path))
         filename = os.path.basename(key) 
         newKey = f"annotated/{filename}"
 
@@ -73,6 +150,15 @@ while True:
                 bucket,
                 newKey,
                 ExtraArgs={'ContentType': 'image/jpeg'}
+            )
+
+        if risks:
+            image_url = f"https://{bucket}.s3.amazonaws.com/{newKey}"
+
+            sns.publish(
+                TopicArn=SNS_TOPIC_ARN,
+                Subject="Aegis Alert",
+                Message=f"There is a risk detected in this image.\n\nView: {image_url}"
             )
 
         # Remove job from queue
